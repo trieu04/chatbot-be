@@ -1,0 +1,70 @@
+# Application configuration
+app:
+  name: Your App Name # Application name
+  port: 3000 # Application port
+
+# Database configuration
+db:
+  host: localhost # Database host
+  port: 5432 # PostgreSQL port
+  username: your_db_username # Database username
+  password: your_db_password # Database password
+  database: your_database_name # Database name
+  synchronize: false # Auto synchronize schema (use true only in development)
+  logging:
+    - error # Logging types
+
+# Google OAuth configuration
+google:
+  clientID: your_google_client_id # Google OAuth Client ID
+  clientSecret: your_google_client_secret # Google OAuth Client Secret
+  callbackURL: http://localhost:3000/auth/google/callback # Callback URL
+
+# GitHub OAuth configuration
+github:
+  clientID: your_github_client_id # GitHub OAuth Client ID
+  clientSecret: your_github_client_secret # GitHub OAuth Client Secret
+  callbackURL: http://localhost:3000/auth/github/callback # Callback URL
+  scope:
+    - user:email # Required scopes
+
+# JWT configuration
+jwt:
+  # Supported algorithms:
+  # - Asymmetric (recommended): RS256, RS384, RS512 (RSA), ES256, ES384, ES512 (ECDSA)
+  # - Symmetric: HS256, HS384, HS512 (HMAC)
+  algorithm: RS256 # JWT algorithm
+  
+  # For asymmetric algorithms (RS*, ES*)
+  privateKeyPath: ./keys/private.key # Path to private key
+  publicKeyPath: ./keys/public.key # Path to public key
+
+  # For symmetric algorithms (HS*)
+  secret: your_jwt_secret_key # Secret key
+
+  # Token expiration in minutes
+  expiresIn: 1440 # Token expiration in minuite (1440= 1 day)
+
+# Authentication cookie configuration
+authCookie:
+  name: auth_cookie # Cookie name
+  maxAge: 86400000 # Cookie max age in milisecond (86400000 = 1 day)
+  domains:
+    - localhost # Allowed domains
+    - yourdomain.com # Can use wildcard like .yourdomain.com
+
+# CORS configuration
+cors:
+  allowedOrigins:
+    - http://localhost:* # Allowed origins
+    - https://yourdomain.com # Can use wildcard like https://*.yourdomain.com
+  allowCredentials: true # Allow credentials
+
+# Email configuration
+mailer:
+  host: smtp.gmail.com # SMTP host
+  port: 587 # SMTP port
+  secure: false # Use SSL/TLS
+  user: your_email@gmail.com # Email address
+  pass: your_email_password # Email password or App Password
+  from: your_email@gmail.com # From address

@@ -1,35 +1,31 @@
-// @ts-check
-import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+import antfu from "@antfu/eslint-config";
 
-export default tseslint.config(
-  {
-    ignores: ['eslint.config.mjs'],
+export default antfu({
+  type: "app",
+  stylistic: {
+    semi: true,
+    indent: 2,
+    quotes: "double",
   },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  eslintPluginPrettierRecommended,
-  {
-    languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-      sourceType: 'commonjs',
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
+  typescript: {
+    overrides: {
+      "ts/consistent-type-imports": "off",
+      "ts/consistent-type-definitions": "off",
+      "perfectionist/sort-imports": "off",
+      "perfectionist/sort-exports": "off",
+      "perfectionist/sort-named-imports": "off",
+      "perfectionist/sort-named-exports": "off",
+      "perfectionist/sort-type-exports": "off",
+      "perfectionist/sort-type-imports": "off",
+      "unicorn/prefer-node-protocol": "off",
+      "unused-imports/no-unused-imports": "warn",
+      "unused-imports/no-unused-vars": "warn",
+      "node/prefer-global/process": "off",
+      "node/prefer-global/buffer": "off",
     },
   },
-  {
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      "prettier/prettier": ["error", { endOfLine: "auto" }],
-    },
-  },
-);
+  jsonc: false,
+  markdown: false,
+  yaml: false,
+  toml: false,
+});
