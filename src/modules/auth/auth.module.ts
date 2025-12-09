@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Global, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -44,6 +44,7 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 // Interceptors
 import { AuthCookieInterceptor } from "./interceptors/auth-cookie.interceptor";
 
+@Global()
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -93,6 +94,6 @@ import { AuthCookieInterceptor } from "./interceptors/auth-cookie.interceptor";
     // Interceptors
     AuthCookieInterceptor,
   ],
-  exports: [JwtAuthGuard, GoogleOAuthService, GitHubOAuthService],
+  exports: [JwtAuthGuard, GoogleOAuthService, GitHubOAuthService, JwtAuthService, AccountService],
 })
 export class AuthModule { }

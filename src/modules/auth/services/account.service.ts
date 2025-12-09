@@ -28,7 +28,7 @@ export class AccountService {
     private configService: ConfigService,
   ) {
     this.SALT_ROUND = this.configService.getOrThrow<number>("crypto.saltRounds");
-    this.PASSWORD_RESET_TOKEN_EXPIRATION = this.configService.getOrThrow<number>("tokenExpiry.passwordReset");
+    this.PASSWORD_RESET_TOKEN_EXPIRATION = this.configService.getOrThrow<number>("token.passwordResetExpiry");
   }
 
   /**
