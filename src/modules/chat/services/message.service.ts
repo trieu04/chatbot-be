@@ -171,4 +171,104 @@ export class MessageService {
       },
     };
   }
+
+  /**
+   * Start a new conversation with the first message (non-streaming)
+   * Uses the user's message as the conversation title
+   */
+  async sendFirstMessage(
+    userId: string,
+    content: string,
+  ): Promise<{
+    conversation: import("../entities/conversation.entity").ConversationEntity;
+    userMessage: MessageEntity;
+    assistantMessage: MessageEntity;
+  }> {
+    // Create conversation with user's message as title (truncated to 100 chars)
+    const title = content.length > 100 ? content.substring(0, 97) + "..." : content;
+    const conversation = await this.chatService.createConversation(userId, { title });
+
+    // Create and save user message
+    const userTokenCount = this.aiService.countTokens(content);
+    const userMessage = this.messageRepository.create({
+      conversationId: conversation.id,
+      role: MessageRole.USER,
+      content,
+      tokenCount: userTokenCount,
+    });
+    await this.messageRepository.save(userMessage);
+
+    // Get context and generate AI response
+    const contextMessages = await this.chatService.getRecentMessagesForContext(
+      conversation.id,
+      conversation.maxTokens * 0.7,
+    );
+
+    const aiResponse = (await this.aiService.generateResponse(
+      contextMessages,
+      false,
+    )) as AiResponse;
+
+    // Create assistant message
+    const assistantMessage = this.messageRepository.create({
+      conversationId: conversation.id,
+      role: MessageRole.ASSISTANT,
+      content: aiResponse.content,
+      tokenCount: aiResponse.tokenCount,
+    });
+    await this.messageRepository.save(assistantMessage);
+
+    // Update conversation token count
+    await this.chatService.updateConversationTokens(conversation.id);
+
+    return {
+      conversation,
+      userMessage,
+      assistantMessage,
+    };
+  }
+
+  /**
+   * Start a new conversation with the first message (streaming)
+   * Uses the user's message as the conversation title
+   */
+  async sendFirstMessageStreaming(
+    userId: string,
+    content: string,
+  ): Promise<{
+    conversation: import("../entities/conversation.entity").ConversationEntity;
+    userMessage: MessageEntity;
+    stream: AsyncIterable<string>;
+  }> {
+    // Create conversation with user's message as title (truncated to 100 chars)
+    const title = content.length > 100 ? content.substring(0, 97) + "..." : content;
+    const conversation = await this.chatService.createConversation(userId, { title });
+
+    // Create and save user message
+    const userTokenCount = this.aiService.countTokens(content);
+    const userMessage = this.messageRepository.create({
+      conversationId: conversation.id,
+      role: MessageRole.USER,
+      content,
+      tokenCount: userTokenCount,
+    });
+    await this.messageRepository.save(userMessage);
+
+    // Get context and generate AI streaming response
+    const contextMessages = await this.chatService.getRecentMessagesForContext(
+      conversation.id,
+      conversation.maxTokens * 0.7,
+    );
+
+    const aiResponse = (await this.aiService.generateResponse(
+      contextMessages,
+      true,
+    )) as AiStreamResponse;
+
+    return {
+      conversation,
+      userMessage,
+      stream: this.wrapStreamWithSave(aiResponse.stream, conversation.id),
+    };
+  }
 }

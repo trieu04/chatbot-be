@@ -112,6 +112,60 @@ export class ChatController {
     await this.chatService.deleteConversation(id, userId);
   }
 
+  // ==================== Start Conversation with First Message ====================
+
+  @Post("conversations/start")
+  @ApiOperation({ summary: "Start a new conversation with the first message" })
+  @ApiOkResponse({ description: "Conversation created and first message processed" })
+  @ApiHttpException(() => [])
+  @HttpCode(201)
+  async startConversation(
+    @GetUserId() userId: string,
+    @Body() dto: SendMessageDto,
+  ): Promise<{
+    conversation: ConversationDto;
+    userMessage: MessageDto;
+    assistantMessage: MessageDto;
+  }> {
+    const result = await this.messageService.sendFirstMessage(userId, dto.content);
+    return {
+      conversation: plainToInstance(ConversationDto, result.conversation),
+      userMessage: plainToInstance(MessageDto, result.userMessage),
+      assistantMessage: plainToInstance(MessageDto, result.assistantMessage),
+    };
+  }
+
+  @Post("conversations/start/stream")
+  @ApiOperation({ summary: "Start a new conversation with streaming first response" })
+  @Sse("sse")
+  async startConversationStream(
+    @GetUserId() userId: string,
+    @Body() dto: SendMessageDto,
+  ): Promise<Observable<{ data: string }>> {
+    const result = await this.messageService.sendFirstMessageStreaming(
+      userId,
+      dto.content,
+    );
+
+    // First, emit the conversation ID so client knows the new conversation
+    const conversationId = result.conversation.id;
+
+    return from(
+      (async function* () {
+        // Emit conversation info first
+        yield JSON.stringify({
+          type: "conversation",
+          conversationId,
+        });
+
+        // Then stream the response text
+        for await (const chunk of result.stream) {
+          yield JSON.stringify({ type: "text", text: chunk });
+        }
+      })(),
+    ).pipe(map(data => ({ data })));
+  }
+
   // ==================== Message Management ====================
 
   @Get("conversations/:id/messages")
