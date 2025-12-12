@@ -224,7 +224,7 @@ export class ChatController {
     return from(
       (async function* () {
         for await (const chunk of result.stream) {
-          yield chunk;
+          yield JSON.stringify({ text: chunk });
         }
       })(),
     ).pipe(map(data => ({ data })));
